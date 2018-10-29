@@ -36,18 +36,6 @@ public class SettingNumber extends AppCompatActivity implements View.OnClickList
                 case UPDATE_BAR:
                     processBar.setVisibility(View.INVISIBLE);
                 break;
-                case START_SERVER:
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                        TCPThreadServer.instanceHMIText(server);
-                        Log.d(TAG, "run: 启动服务器");
-//                            Message message=new Message();
-//                            message.what=START_SERVER;
-//                            handler.sendMessage(message);
-                        }
-                    }).start();
-                    break;
                     default:break;
             }
         }
@@ -83,9 +71,6 @@ public class SettingNumber extends AppCompatActivity implements View.OnClickList
                     public void run() {
                         Log.d(TAG, "run: 启动服务器");
                         TCPThreadServer.instanceHMIText(server);
-//                        Message message=new Message();
-//                        message.what=START_SERVER;
-//                        handler.sendMessage(message);
                     }
                 }).start();
             } catch (IOException e1) {
@@ -97,7 +82,7 @@ public class SettingNumber extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void run() {
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(1000*60);
                         Message message = new Message();
                         message.what = UPDATE_BAR;
                         handler.sendMessage(message);

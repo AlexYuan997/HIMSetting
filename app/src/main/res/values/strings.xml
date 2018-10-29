@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">HIMSetting</string>
+    <string name="CLEAR_INFO">清空文本框</string>
+    <string name="SETTING_TEXT">设置信息</string>
+
+    <string name="app_name">HMI屏幕显示工具</string>
+    <string name="HMI_NUMBER">屏幕编号</string>
+
+    <string name="DURG_NNME">药品或耗材名称</string>
+    <string name="COMPANY_NAME">生成厂家名称</string>
+    <string name="OPERATION_MAIN">使用说明：</string>
+    <string name="OPERATION_ONE">1.设置屏幕编号，点击运行一次即可，后面内容输入操作不需要重复此操作。</string>
+    <string name="OPERATION_TWO">2.根据屏幕上的编号，在设置主界面输入编号和内容，点击设置。</string>
+    <string name="OPERATION_THREE">
+注：1.由于安卓设备和串口服务器通讯可能会存在一些干扰或者屏幕上有遗留的错误数据，会导致设置屏幕编号失败。
+遇到这种情况请退出软件并在后台销毁，然后重新运行软件设置屏幕编号直到所有屏幕正确显示屏幕编号，软件即可正常使用。</string>
+    <string name="OPERATION_FOUR">2.屏幕设置编号成功后，屏幕显示工具程序需要在后台持续运行不得销毁，
+        否者需要重新运行软件设置屏幕编号，且前面存储的编号和输入的信息作废。
+        请不要在不使用程序时销毁后台程序！</string>
 </resources>

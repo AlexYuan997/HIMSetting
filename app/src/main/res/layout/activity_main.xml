@@ -11,7 +11,7 @@
         android:id="@+id/number"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="编号"
+        android:hint="@string/HMI_NUMBER"
         android:inputType="number"
         android:maxLines="1" />
 
@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLength="33"
-        android:hint="第一行信息"
+        android:hint="@string/DURG_NNME"
         android:maxLines="4"
         />
 
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:maxLength="51"
-        android:hint="第二行信息"
+        android:hint="@string/COMPANY_NAME"
         android:maxLines="4"
         />
 
@@ -57,7 +57,7 @@
         android:id="@+id/settingHIM"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="设置信息" />
+        android:text="@string/SETTING_TEXT" />
 
     <Button
         style="@style/Widget.AppCompat.Button.Borderless"
@@ -69,5 +69,5 @@
         android:id="@+id/clearinfo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="清空信息" />
+        android:text="@string/CLEAR_INFO"/>
 </LinearLayout>
