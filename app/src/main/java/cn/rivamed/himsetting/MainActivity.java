@@ -1,9 +1,9 @@
 package cn.rivamed.himsetting;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
+import android.service.autofill.Dataset;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,18 +14,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.IOException;
+import org.litepal.LitePal;
+import org.litepal.crud.DataSupport;
+
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import cn.rivamed.himsetting.MainClass.LCDinfo;
 import cn.rivamed.himsetting.MainClass.TCPClinet;
-import cn.rivamed.himsetting.MainClass.TCPThreadServer;
-import cn.rivamed.himsetting.Utils.HIMInfoStore;
-import cn.rivamed.himsetting.Utils.UtilsFields;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private EditText number;
@@ -55,17 +55,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "onClick: 第一行信息"+t0);
                     String t1=text1.getText().toString();
                     Log.d(TAG, "onClick: 第一行信息"+t1);
-                    setSettingText1(num,t0,t1);
+                    boolean b=isContantNumber(num);
+                    if (t0!=null&&t1!=null&&num!=0&&b==true){
+                        setSettingText1(num,t0,t1);
+                    }else if (b==false){
+                        Toast.makeText(MainActivity.this,"编号不存在",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this,"输入的内容为空,请输入正确的内容",Toast.LENGTH_SHORT).show();
+                    }
                     break;
-                    default:break;
+                default:break;
             }
         }
     };
+
+
+
+    //判断是否有这个编号
+    public boolean isContantNumber(int num){
+        boolean b=false;
+
+        List<LCDinfo> lcDinfoList= DataSupport.findAll(LCDinfo.class);
+
+        for (LCDinfo lcd:lcDinfoList
+                ) {
+            if (lcd.getNumber()==num){
+                b=true;
+                break;
+            }
+        }
+
+
+        return b;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //软件启动的时候启动服务
+
 
         number=findViewById(R.id.number);
 
@@ -80,6 +109,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setbutton.setOnClickListener(this);
         clearbutton.setOnClickListener(this);
 
+        //先初始化数据库，先往里面存点无用的数据,不然子线程中会出错
+        LCDinfo lcDinfo=new LCDinfo();
+        lcDinfo.setSerialnumber("dasdsadsad");
+        lcDinfo.save();
+
+        Intent intent=new Intent(MainActivity.this,MyService.class);
+        startService(intent);
+
+
+
+
+
+//    DataSupport.deleteAll(LCDinfo.class);
+
+
+
     }
 
     @Override
@@ -87,12 +132,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()){
             case R.id.settingHIM:
                 Log.d(TAG, "onClick: 进入设置数据btn");
-/*               int num= Integer.parseInt(number.getText().toString());
-                String t0=text0.getText().toString();
-                Log.d(TAG, "onClick: 第一行信息"+t0);
-                String t1=text1.getText().toString();
-                Log.d(TAG, "onClick: 第一行信息"+t1);
-                setSettingText(num,t0,t1);*/
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -113,13 +152,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }).start();
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
     }
 
     @Override
-        public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main,menu);
         return true;
     }
@@ -127,44 +166,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public  void setSettingText1(int number,String txt0,String txt1){
         HashMap<Integer,Socket> socketstore=new HashMap<Integer,Socket>();
-        socketstore= TCPThreadServer.getSocketstore();
+        socketstore= TCPClinet.getSocketstore();
+
         TCPClinet tcpClinet=new TCPClinet();
 
         for(Map.Entry<Integer,Socket> entry: socketstore.entrySet())
         {
+            Log.d(TAG, "setSettingText1:包含的编号 "+entry.getKey());
             if (number==entry.getKey()){
                 Socket socket=entry.getValue();
                 try {
-                OutputStream outputStream=socket.getOutputStream();
-                tcpClinet.writeTxt(txt0,outputStream);
-                tcpClinet.writeTxt1(txt1,outputStream,entry.getKey());
-            }catch (Exception e){
+                    //将传进来的数据输出到LCD屏幕上
+                    OutputStream outputStream=socket.getOutputStream();
+                    tcpClinet.writeTxt(txt0,outputStream);
+                    tcpClinet.writeTxt1(txt1,outputStream,entry.getKey());
+
+                    //存储想要存入的两个文本
+                    LCDinfo lcDinfo=new LCDinfo();
+                    lcDinfo.setFristtxt(txt0);
+                    lcDinfo.setSecondtxt(txt1);
+                    lcDinfo.updateAll("number=?",String.valueOf(number));
+                }catch (Exception e){
                     e.printStackTrace();
                 }
             }
-/*            else if (number!=entry.getKey()){
-//                Toast.makeText(MainActivity.this,"没有这个编号",Toast.LENGTH_SHORT).show();
-            }*/
             System.out.println("Key: "+ entry.getKey()+ " Value: "+entry.getValue());
         }
 
     }
 
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
-            case R.id.set_item:
-                Intent intent=new Intent(MainActivity.this,SettingNumber.class);
-                startActivity(intent);
-                break;
             case R.id.about_app:
                 Intent intent1=new Intent(MainActivity.this,Manul.class);
                 startActivity(intent1);
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
         return true;
     }

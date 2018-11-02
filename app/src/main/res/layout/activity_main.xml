@@ -25,10 +25,11 @@
         android:id="@+id/editText1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLength="33"
+        android:capitalize="none"
         android:hint="@string/DURG_NNME"
+        android:maxLength="33"
         android:maxLines="4"
-        />
+        android:singleLine="false" />
 
     <Button
         style="@style/Widget.AppCompat.Button.Borderless"
@@ -41,11 +42,13 @@
         style="@style/Widget.AppCompat.EditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:capitalize="none"
         android:ems="10"
-        android:maxLength="51"
         android:hint="@string/COMPANY_NAME"
+        android:inputType="text"
+        android:maxLength="51"
         android:maxLines="4"
-        />
+        android:singleLine="false" />
 
     <Button
         style="@style/Widget.AppCompat.Button.Borderless"

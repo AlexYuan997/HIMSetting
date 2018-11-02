@@ -17,7 +17,6 @@ public class UtilsFields implements Serializable {
 	
 	public final static  String CONNECT="connect";
 
-	private static  HashSet<HIMInfoStore> himInfoStores=new HashSet<HIMInfoStore>();
 
 
 	
@@ -54,9 +53,6 @@ public class UtilsFields implements Serializable {
 	}
 	
 	
-	public static synchronized HashSet<HIMInfoStore> getHimInfoStores() {
-		return himInfoStores;
-	}
 
 
 }

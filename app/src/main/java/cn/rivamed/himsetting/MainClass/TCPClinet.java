@@ -2,44 +2,59 @@ package cn.rivamed.himsetting.MainClass;
 
 import android.util.Log;
 
+import org.litepal.crud.DataSupport;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.List;
 
-import cn.rivamed.himsetting.Utils.HIMInfoStore;
+import cn.rivamed.himsetting.Utils.AccessNumber;
 import cn.rivamed.himsetting.Utils.UtilsFields;
 
 public class TCPClinet implements Runnable {
+	private static  HashMap<Integer,Socket> socketstore=new HashMap<Integer,Socket>();
+
+	public static  HashMap<Integer, Socket> getSocketstore() {
+		return socketstore;
+	}
 
 	private   static final String TAG="TCPClinet";
 
 	private Socket socket;
+
 	private int accessnumber;
+
 	private byte[] b = UtilsFields.getThree0XFF();
 
 	public void run() {
 		sendCommnd();
 	}
 
-	public TCPClinet(Socket socket,int accessnumber) {
-		this.accessnumber=accessnumber;
+	public TCPClinet(Socket socket) {
+
 		this.socket = socket;
 	}
-	
+
 	public TCPClinet() {
 	}
 
 	public void sendCommnd() {
 		try {
-            OutputStream outputStream = socket.getOutputStream();
+			//先发送3个0xFF
+			OutputStream outputStream = socket.getOutputStream();
 			outputStream.write(b);
+
+			//发送连接指令
 			String command = UtilsFields.CONNECT;
 			byte[] bs = command.getBytes(UtilsFields.GB2312);
 			outputStream.write(UtilsFields.arrysCombine(bs, b));
 
 
+            //获取LCD屏返回的数据包
 			byte[] len = new byte[1024];
 			InputStream inputStream = socket.getInputStream();
 			inputStream.read(len, 0, len.length);
@@ -47,22 +62,81 @@ public class TCPClinet implements Runnable {
 
 
 			if (leninfotostring.contains(UtilsFields.COMOK)) {
-				Log.d(TAG,"获取的屏幕信息"+ leninfotostring);
-				String[] info = leninfotostring.split(",");
-				if (info[5] != null) {
-					HIMInfoStore himInfoStore = new HIMInfoStore(info[5], accessnumber, this);
-					Log.d(TAG, "sendCommnd: 存储的信息"+himInfoStore.toString());
-					UtilsFields.getHimInfoStores().add(himInfoStore);
-					writeTxt(accessnumber+"",outputStream);
-				}
-			} else {
-				Log.d(TAG, "sendCommnd: 错误的屏幕信息包");
-			}
+				final String[] info = leninfotostring.split(",");
+				Log.d(TAG, "序列号"+info[5] );
+				List<LCDinfo> lcDinfoList= DataSupport.findAll(LCDinfo.class);
 
+				boolean b=getBooleanHaveInfo5(lcDinfoList,info[5]);
+
+				if (info[5] != null){
+
+					if (b==false){
+						accessnumber=TCPClinet.getNumberAlone(AccessNumber.getAccessNumber().getNumber(),lcDinfoList);
+						Log.d(TAG, "sendCommnd:屏幕编号 "+accessnumber);
+
+						LCDinfo lcDinfo=new LCDinfo();
+						lcDinfo.setSerialnumber(info[5]);
+					    lcDinfo.setNumber(accessnumber);
+						lcDinfo.save();
+						socketstore.put(accessnumber,socket);
+						writeTxt("屏幕编号:"+accessnumber,outputStream);
+					}else {
+						for (LCDinfo lc:lcDinfoList
+								) {
+							if (lc.getSerialnumber()!=null){
+							if (lc.getSerialnumber().equals(info[5])){
+								socketstore.put(lc.getNumber(),socket);
+								writeTxt(lc.getFristtxt(),outputStream);
+								writeTxt1(lc.getSecondtxt(),outputStream,lc.getNumber());
+								break;
+							}
+						}}
+					}
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+	}
+
+	//判断获取的串口屏编号是否存在，如果存在加1，在判断，直到不存在的时候返回
+
+	public static int getNumberAlone(int accessnumber,List<LCDinfo> lcDinfoList1){
+		int i=accessnumber;
+		boolean b=true;
+
+		List<LCDinfo> lcDinfoList=lcDinfoList1;
+		while (b){
+		for (LCDinfo lc:lcDinfoList
+			 ) {
+			if (i==lc.getNumber()){
+				i++;
+			}else {
+				b=false;
+				break;
+			}
+			}
+		}
+		return i;
+	}
+
+
+
+	//判断是否已经存储
+	public boolean getBooleanHaveInfo5( List<LCDinfo> lcDinfoList,String info){
+		boolean b=false;
+		if(lcDinfoList!=null){
+		for (LCDinfo lcDinfo:lcDinfoList
+				) {
+			if (lcDinfo.getSerialnumber()!=null){
+			if (lcDinfo.getSerialnumber().equals(info)){
+				b=true;
+				break;
+			}
+		}}
+		}
+		return  b;
 	}
 
 
@@ -109,12 +183,6 @@ public class TCPClinet implements Runnable {
 		this.socket = socket;
 	}
 
-	public int getAccessnumber() {
-		return accessnumber;
-	}
 
-	public void setAccessnumber(int accessnumber) {
-		this.accessnumber = accessnumber;
-	}
 
 }
