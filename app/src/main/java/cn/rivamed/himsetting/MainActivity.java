@@ -1,9 +1,11 @@
 package cn.rivamed.himsetting;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.service.autofill.Dataset;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -164,6 +166,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+
+   public void    clearAllData(){
+        DataSupport.deleteAll(LCDinfo.class);
+    }
+
+
     public  void setSettingText1(int number,String txt0,String txt1){
         HashMap<Integer,Socket> socketstore=new HashMap<Integer,Socket>();
         socketstore= TCPClinet.getSocketstore();
@@ -201,6 +209,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.about_app:
                 Intent intent1=new Intent(MainActivity.this,Manul.class);
                 startActivity(intent1);
+                break;
+            case R.id.clear_data:
+                AlertDialog.Builder dialog=new AlertDialog.Builder(MainActivity.this);
+                dialog.setTitle("清空数据库");
+                dialog.setMessage("您确定清空数据库吗，清空后数据将不可恢复");
+                dialog.setCancelable(false);
+                dialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        clearAllData();
+                    }
+                });
+                dialog.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                dialog.show();
                 break;
             default:
                 break;

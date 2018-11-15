@@ -20,7 +20,7 @@ public class TCPThreadServer  {
 
 	public static void instanceHMIText(ServerSocket server) {
 		try {
-
+			Log.d(TAG, "instanceHMIText: 开始连接。。。。。");
 			socket = server.accept();
 			if (socket!=null) {
 				TCPClinet clinet = new TCPClinet(socket);
